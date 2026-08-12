@@ -1,0 +1,61 @@
+# TEMPLATE SITE -- copy this file, edit the paths, run.
+#
+# A "site" is the one file that is specific to *your* installation: where the
+# HCP tree lives and where output goes. Nothing else in the pipeline needs to
+# change to run this reproduction somewhere new.
+#
+#   cp src/insula_rtop/pipeline/site/example.yaml \
+#      src/insula_rtop/pipeline/site/mysite.yaml
+#   $EDITOR src/insula_rtop/pipeline/site/mysite.yaml
+#   uv run python -m insula_rtop.pipeline site=mysite
+#
+# Or leave the file alone and override keys on the command line:
+#
+#   uv run python -m insula_rtop.pipeline site=example \
+#       site.hcp_data_root=/mnt/hcp site.deriv_root=/scratch/menon
+#
+# Two worked sites ship alongside this one: `local` (a workstation, everything
+# under ./data) and `margaret` (a SLURM cluster). Read whichever is closer to
+# your setup.
+
+# ---- inputs (read-only; the pipeline only ever symlinks into this tree) ----
+
+# The directory that directly contains the numeric subject directories:
+#   ${hcp_data_root}/100307/T1w/Diffusion/data.nii.gz
+#   ${hcp_data_root}/100307/T1w/fsaverage_LR32k/100307.L.midthickness_MSMAll...
+# Both the *minimally preprocessed structural* and *diffusion* packages are
+# needed. The pipeline reports any subject whose files are missing or zero-byte
+# rather than failing later, so an incomplete download is safe to point at.
+hcp_data_root: /path/to/HCP
+
+# HCP S1200 *unrestricted* behavioural table. Supplies the release label used to
+# select the cohort, the 11 cognitive-control measures the CCA needs, and (when
+# the export includes them) the FreeSurfer volumes used as optional covariates.
+behavioral_csv: /path/to/HCP/hcp_behavioral.csv
+
+# HCP S1200 *restricted* table. Entirely optional -- set to null if you do not
+# have access. Only Age_in_Yrs, Family_ID and Handedness are read, and only
+# Family_ID changes any result (leave-one-family-out cross-validation, which no
+# published analysis uses; see README, "Confounds").
+restricted_csv: null
+
+# ---- outputs ---------------------------------------------------------------
+
+# Keep both of these OUTSIDE the git checkout. A checkout is disposable, and the
+# RTOP fit costs about 1.9 core-hours per subject; anything that expensive
+# written inside one is a deletion away from being lost.
+
+# The BIDS view of the HCP tree: symlinked images plus generated sidecars.
+# Small -- symlinks and JSON only.
+bids_root: /path/to/work/menon_insula/bids
+
+# Everything computed: RTOP volumes and surfaces, atlas labels, statistics,
+# figures. Budget roughly 2 GB per 100 subjects.
+deriv_root: /path/to/work/menon_insula/derivatives
+
+# ---- cluster identity (ignored unless slurm.use=true) ----------------------
+
+# Passed straight through to submitit. null means "let SLURM choose", which is
+# right on most single-partition clusters.
+slurm_account: null
+slurm_partition: null

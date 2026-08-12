@@ -1,0 +1,27 @@
+# Inria Parietal "margaret" cluster: absolute paths and cluster identity.
+#
+# One of two worked examples of a site file; see `example.yaml` for the
+# annotated template. Select with `site=margaret`, or copy it as the starting
+# point for another SLURM installation.
+
+# HCP Young Adult, minimally preprocessed (structural + diffusion packages).
+# 1051 subjects here have a complete T1w/Diffusion; 1094 have 32k fs_LR
+# surfaces. Read-only: the pipeline only ever symlinks into this tree.
+hcp_data_root: /data/parietal/store4/data/HCP
+
+# HCP S1200 behavioural tables.
+behavioral_csv: /data/parietal/store4/data/HCP/hcp_behavioral.csv
+# Restricted table: only Family_ID is used, and only for the optional
+# leave-one-family-out cross-validation. null if you do not have access.
+restricted_csv: /data/parietal/store4/data/HCP/hcp_restricted.csv
+
+# The BIDS view of the HCP tree (symlinks + generated sidecars) and the
+# computed derivatives. Kept on store4 alongside the other derivative trees,
+# never inside a git worktree: a worktree is disposable, and anything expensive
+# written into one is a deletion away from being lost.
+bids_root: /data/parietal/store4/derivatives/menon_insula/bids
+deriv_root: /data/parietal/store4/derivatives/menon_insula/derivatives
+
+# SLURM identity.
+slurm_account: mind
+slurm_partition: null

@@ -1,0 +1,12 @@
+# @package _global_
+#
+# Every figure, at publication resolution.
+#
+#   uv run python -m insula_rtop.pipeline site=mysite +experiment=all_figures
+
+steps: [figures]
+
+figures:
+  only: null
+  formats: [png, pdf]
+  dpi: 300

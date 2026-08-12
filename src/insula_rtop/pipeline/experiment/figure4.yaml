@@ -1,0 +1,15 @@
+# @package _global_
+#
+# Figure 4 -- population RTOP maps on the insula (the reproducible half).
+#
+#   uv run python -m insula_rtop.pipeline site=mysite +experiment=figure4
+#
+# Renders from the tables the `analysis` step already wrote -- no refitting.
+# Add `steps=[analysis,{figures}]` to recompute the statistics first.
+
+steps: [figures]
+
+figures:
+  only: [figure4_rtop_maps]
+  formats: [png, pdf]
+  dpi: 300
