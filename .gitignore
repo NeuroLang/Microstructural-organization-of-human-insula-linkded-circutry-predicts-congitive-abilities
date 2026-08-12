@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+
+# Hydra run dirs
+outputs/
+
+# Downloaded atlases (fetched on demand, see insula_rtop/atlases/)
+data/atlas_cache/
+
+# Locally cached figures pulled from the cluster for inspection
+results/
+
+# Worktrees, including other sessions working in this repo
+.claude/worktrees/
+
+# HCP restricted data (Age_in_Yrs, Family_ID, Handedness) must not be
+# committed; the cohort step regenerates this table from the HCP tables.
+data/cohort_participants.tsv
+
+# Resolved dependency versions are local, not part of the published record.
+uv.lock

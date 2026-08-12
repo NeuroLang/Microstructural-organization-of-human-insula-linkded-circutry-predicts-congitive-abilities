@@ -1,0 +1,33 @@
+{
+  "upload_type": "software",
+  "title": "insula-rtop: a pure-Python reproduction of the diffusion analyses of Menon et al., eLife 2020;9:e53470",
+  "version": "v0.1.0",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Wassermann, Demian",
+      "affiliation": "Inria",
+      "orcid": "0000-0001-5194-6056"
+    }
+  ],
+  "description": "<p>A pure-Python re-implementation of the diffusion-MRI analyses behind Figures 2, 3, 4, 7 and 8 of Menon et al., <em>Microstructural organization of human insula is linked to its macrofunctional circuitry and predicts cognitive control</em>, eLife 2020;9:e53470: RTOP from MAP-MRI, projection to the fs_LR cortical surface, insula and ACC subdivisions, ANOVA and subsampling stability, gradient directional statistics, and canonical correlation with cognitive control.</p><p><code>uv sync</code> is the whole installation. There is no Connectome Workbench, FSL or FreeSurfer dependency: the HCP structural package already ships midthickness surfaces in the space the diffusion data lives in, so Appendix 1's two-step projection collapses to one trilinear interpolation, and every other binary is replaced by the closed-form operation it performed. 254 tests pin the numerical core to analytic answers rather than to remembered output.</p><p>Reproduced over 451 HCP Young Adult participants. The subdivision ordering vAI &lt; dAI &lt; PI holds in both hemispheres under both parcellations, the directional statistics reproduce the published confidence intervals, and the brain-behaviour prediction reproduces at r = 0.155 out of sample against 0.19.</p><p>Three findings are not in the paper. The brain-behaviour prediction does not survive adjustment for sex. The left-hemisphere ACC ordering turns on where a single ROI boundary falls, and moving it 7 mm reproduces the published ordering in both hemispheres. The Figure 3C mean directions reproduce to 9 degrees once angles are read in the anatomical plane the figure is labelled with. All three are documented in the README with the evidence and the commands to re-run them.</p><p>No Human Connectome Project data is redistributed. Reproducing the results requires your own HCP Young Adult access.</p>",
+  "keywords": [
+    "diffusion MRI",
+    "MAP-MRI",
+    "return-to-origin probability",
+    "insula",
+    "anterior cingulate cortex",
+    "cortical microstructure",
+    "Human Connectome Project",
+    "reproducibility"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "10.7554/eLife.53470",
+      "relation": "isSupplementTo",
+      "resource_type": "publication-article",
+      "scheme": "doi"
+    }
+  ],
+  "language": "eng"
+}

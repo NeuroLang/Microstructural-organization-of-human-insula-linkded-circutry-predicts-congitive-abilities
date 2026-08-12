@@ -1,0 +1,97 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "insula-rtop"
+version = "0.1.0"
+description = "Reproduction of the diffusion-MRI analyses of Menon et al. (2020), eLife 9:e53470"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+dependencies = [
+    # Bounds, not a lock file. The upper bound on anything that can move a
+    # number is the next minor release, because a minor release of dipy, scipy
+    # or scikit-learn can change an algorithm and with it a published figure;
+    # everything else is capped at the next major. The versions every result in
+    # the README was computed with are the lower bounds here, listed in
+    # "Verification". A lock file is still the stronger guarantee -- commit your
+    # own if you need one.
+
+    # Numerically load-bearing: these produce the RTOP values, the surface
+    # gradients, and every statistic derived from them.
+    "dipy>=1.12.1,<1.13",
+    "numpy>=2.5,<2.6",
+    "scipy>=1.18,<1.19",
+    "scikit-learn>=1.8,<1.9",
+    "statsmodels>=0.14.6,<0.15",
+    "pandas>=3.0,<4",
+    "nibabel>=5.4,<6",
+
+    # Ships HCP-MMP 1.0 (Glasser et al., 2016) on the 32k fs_LR mesh and the
+    # S1200 group-average MSMAll surfaces, as data files under an MIT licence.
+    # Used as a data source only; none of its API is imported. This is what
+    # keeps the atlas step offline-reproducible: BALSA needs a login and
+    # templateflow's tpl-fsLR carries no parcellation. Pinned exactly: the
+    # atlas is data, and a different version would be a different atlas.
+    "hcp-utils==0.1.0",
+
+    # Figures. These change how a result is drawn, never what it is.
+    "matplotlib>=3.11,<4",
+    # The published figures are visibly seaborn: darkgrid theme, violins with
+    # inner boxes, regplot CI bands. Matching them by hand would be worse.
+    "seaborn>=0.13,<0.14",
+    "nilearn>=0.14,<0.15",
+
+    # Plumbing.
+    "hydra-core>=1.3,<2",
+    "omegaconf>=2.3,<3",
+    "submitit>=1.5,<2",
+    # Imported directly by rtop.mapl for within-subject parallelism, so it is a
+    # declared dependency rather than an incidental scikit-learn one.
+    "joblib>=1.5,<2",
+    # Imported directly by rtop.mapl to pin BLAS to one thread per worker.
+    "threadpoolctl>=3.6,<4",
+    "pybids>=0.22,<1",
+    "requests>=2.32,<3",
+    "tqdm>=4.66,<5",
+]
+
+
+[project.scripts]
+hcp-cohort = "insula_rtop.hcp.cohort:main"
+hcp2bids = "insula_rtop.hcp.to_bids:main"
+rtop-volume = "insula_rtop.rtop.run:main"
+rtop-to-surface = "insula_rtop.surface.run:main"
+build-atlas-labels = "insula_rtop.atlases.run:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-xdist>=3.6",
+    "ruff>=0.7",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/insula_rtop"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+xfail_strict = true
+markers = [
+    "slow: tests that download atlases or run heavy computations",
+    "margaret: tests that require the HCP tree on the margaret cluster",
+]
+
+[tool.uv]
+environments = [
+    "sys_platform == 'linux' and python_version >= '3.12'",
+    "sys_platform == 'darwin' and python_version >= '3.12'",
+]

@@ -1,0 +1,15 @@
+# @package _global_
+#
+# Figure 8 -- canonical correlation and cross-validated prediction.
+#
+#   uv run python -m insula_rtop.pipeline site=mysite +experiment=figure8
+#
+# Renders from the tables the `analysis` step already wrote -- no refitting.
+# Add `steps=[analysis,{figures}]` to recompute the statistics first.
+
+steps: [figures]
+
+figures:
+  only: [figure8_cognitive_control]
+  formats: [png, pdf]
+  dpi: 300

@@ -1,0 +1,15 @@
+# @package _global_
+#
+# Figure 2 -- insula subdivisions: ROI renderings, RTOP violins, stability.
+#
+#   uv run python -m insula_rtop.pipeline site=mysite +experiment=figure2
+#
+# Renders from the tables the `analysis` step already wrote -- no refitting.
+# Add `steps=[analysis,{figures}]` to recompute the statistics first.
+
+steps: [figures]
+
+figures:
+  only: [figure2_insula_subdivisions]
+  formats: [png, pdf]
+  dpi: 300

@@ -1,0 +1,60 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite both the software itself and the paper
+  whose analyses it reproduces.
+title: >-
+  insula-rtop: a pure-Python reproduction of the diffusion analyses of
+  Menon et al., eLife 2020;9:e53470
+abstract: >-
+  A re-implementation, in pure Python, of the diffusion-MRI analyses behind
+  Figures 2, 3, 4, 7 and 8 of Menon et al. (2020): RTOP from MAP-MRI,
+  projection to the fs_LR cortical surface, insula and ACC subdivisions, ANOVA
+  and subsampling stability, gradient directional statistics, and canonical
+  correlation with cognitive control. Requires Human Connectome Project Young
+  Adult access; no HCP data is redistributed.
+type: software
+version: 0.1.0
+license: MIT
+repository-code: >-
+  https://github.com/NeuroLang/Microstructural-organization-of-human-insula-linkded-circutry-predicts-congitive-abilities
+authors:
+  - family-names: Wassermann
+    given-names: Demian
+    orcid: https://orcid.org/0000-0001-5194-6056
+    affiliation: Inria
+keywords:
+  - diffusion MRI
+  - MAP-MRI
+  - return-to-origin probability
+  - insula
+  - anterior cingulate cortex
+  - cortical microstructure
+  - Human Connectome Project
+  - reproducibility
+preferred-citation:
+  type: article
+  title: >-
+    Microstructural organization of human insula is linked to its
+    macrofunctional circuitry and predicts cognitive control
+  authors:
+    - family-names: Menon
+      given-names: Vinod
+    - family-names: Gallardo
+      given-names: Guillermo
+      orcid: https://orcid.org/0000-0002-8271-2516
+    - family-names: Pinsk
+      given-names: Mark A
+    - family-names: Nguyen
+      given-names: Van-Dang
+    - family-names: Li
+      given-names: Jing-Rebecca
+    - family-names: Cai
+      given-names: Weidong
+      orcid: https://orcid.org/0000-0001-9581-7774
+    - family-names: Wassermann
+      given-names: Demian
+      orcid: https://orcid.org/0000-0001-5194-6056
+  journal: eLife
+  volume: 9
+  year: 2020
+  doi: 10.7554/eLife.53470

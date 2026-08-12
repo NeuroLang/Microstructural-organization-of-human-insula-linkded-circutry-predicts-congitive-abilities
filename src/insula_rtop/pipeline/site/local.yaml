@@ -1,0 +1,20 @@
+# A workstation install: everything under ./data, no cluster. This is the
+# default, so a fresh clone runs without editing anything -- symlink or mount
+# the HCP tree at ./data/HCP and it works.
+#
+# Every path is relative to the working directory, so override them if you keep
+# the HCP tree elsewhere:
+#   uv run python -m insula_rtop.pipeline site.hcp_data_root=/mnt/hcp
+#
+# For a permanent installation, copy `example.yaml` instead -- it documents
+# every key.
+
+hcp_data_root: data/HCP
+behavioral_csv: data/HCP/hcp_behavioral.csv
+restricted_csv: null
+
+bids_root: data/menon_insula/bids
+deriv_root: data/menon_insula/derivatives
+
+slurm_account: null
+slurm_partition: null

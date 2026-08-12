@@ -1,0 +1,15 @@
+# @package _global_
+#
+# Figure 3 -- mean RTOP, main gradient directions, and their distribution.
+#
+#   uv run python -m insula_rtop.pipeline site=mysite +experiment=figure3
+#
+# Renders from the tables the `analysis` step already wrote -- no refitting.
+# Add `steps=[analysis,{figures}]` to recompute the statistics first.
+
+steps: [figures]
+
+figures:
+  only: [figure3_gradients]
+  formats: [png, pdf]
+  dpi: 300

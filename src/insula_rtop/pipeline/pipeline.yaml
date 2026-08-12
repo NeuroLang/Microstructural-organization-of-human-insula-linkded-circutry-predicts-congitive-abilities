@@ -1,0 +1,190 @@
+# Pipeline configuration for the reproduction of
+# Menon et al. (2020), eLife 9:e53470 -- diffusion analyses only.
+#
+# This file holds pipeline *logic*: which steps run, and the algorithm
+# parameters. It is portable across installations and should not need editing.
+#
+# Absolute paths and cluster identity live in `site/<name>.yaml` and are
+# referenced here through `${site....}` interpolation. To run this reproduction
+# on your own data, copy `site/example.yaml`, edit the paths, and select it with
+# `site=<name>`; individual keys can also be overridden on the command line
+# (`site.hcp_data_root=/other/path`). Two worked sites ship with the repository:
+# `local` (a workstation) and `margaret` (a SLURM cluster).
+#
+# Usage
+# -----
+#   # everything, on your own site
+#   uv run python -m insula_rtop.pipeline site=mysite
+#
+#   # just get the cohort and the BIDS view
+#   uv run python -m insula_rtop.pipeline site=mysite steps=[cohort,hcp2bids]
+#
+#   # a three-subject smoke test
+#   uv run python -m insula_rtop.pipeline site=mysite \
+#       subjects=[100206,100307,100408] cohort.releases=null
+#
+#   # the expensive step, dispatched to SLURM
+#   uv run python -m insula_rtop.pipeline site=mysite steps=[rtop_volume] \
+#       slurm.use=true slurm.max_jobs=100
+#
+#   # re-run only the statistics on existing derivatives
+#   uv run python -m insula_rtop.pipeline site=mysite steps=[analysis,figures]
+#
+#   # redraw one figure at publication resolution
+#   uv run python -m insula_rtop.pipeline site=mysite +experiment=figure3
+
+defaults:
+  # A workstation layout under ./data, so a fresh clone runs without editing
+  # anything. Override with `site=<name>` for a real installation.
+  - site: local
+  - _self_
+
+# Ordered list of steps to run. Each writes under its own directory in
+# `${deriv_root}`, except `cohort` and `hcp2bids`, which write the BIDS dataset.
+steps:
+  - cohort
+  - hcp2bids
+  - rtop_volume
+  - rtop_surface
+  - atlas_labels
+  - analysis
+  - figures
+
+# Where the BIDS view of the HCP tree is written (symlinks + generated sidecars).
+bids_root: ${site.bids_root}
+
+# Where every computed derivative is written.
+deriv_root: ${site.deriv_root}
+
+# Restrict every per-subject step to these subject IDs. `null` means "the
+# cohort in participants.tsv". Quote numeric IDs on the command line
+# (subjects=["100206"]) or they arrive as ints.
+subjects: null
+
+cohort:
+  behavioral_csv: ${site.behavioral_csv}
+  restricted_csv: ${site.restricted_csv}
+  # Historical HCP Q1-Q6 releases: in the S1200 table Q4-Q6 are folded into
+  # `S500`, so this set -- not a literal Q1..Q6 match -- is the reproducible
+  # spelling of the paper's cohort. `null` keeps every release (~1051 subjects).
+  releases: [Q1, Q2, Q3, S500]
+  # Drop subjects missing any of the 11 CCA behavioural measures. The paper's
+  # CCA needs complete cases.
+  require_behavior: true
+
+hcp2bids:
+  force: false
+  skip_existing: true
+  resume: true
+  slurm_time: 10
+  slurm_cpus_per_task: 1
+  slurm_mem: null
+
+rtop_volume:
+  # `surface+ventricles` fits MAPL in exactly the voxels the pipeline reads --
+  # the 8 voxels of each midthickness vertex's trilinear stencil, plus the
+  # ventricles for D_vent. Every value the analyses use is identical to a
+  # whole-brain fit; on margaret that is ~236k voxels against 741k.
+  # `ribbon+ventricles` fits the dilated cortical ribbon (~490k) instead, which
+  # leaves a usable RTOP map across grey matter. `brain` is what the paper
+  # describes, at ~3x the cost of the default.
+  fit_mask: surface+ventricles
+  ribbon_dilation: 2
+  ventricle_erosion: 1
+  # MAP-MRI truncation order. dipy's default and the value MAPL was validated
+  # at in Fick et al. (2016); the paper does not state a different one.
+  radial_order: 6
+  force: false
+  skip_existing: true
+  resume: true
+  # Processes used for the MAPL fit *within* one subject. The fit is
+  # independent per voxel, so this is pure wall-clock: one subject is about 10
+  # core-hours on margaret, which is only a sane job when spread over the cores
+  # the allocation already has. Keep it equal to slurm_cpus_per_task.
+  fit_jobs: 16
+  # The dominant cost of the pipeline. Time one subject before launching the
+  # cohort -- see README, "Running on margaret".
+  slurm_time: 240
+  slurm_cpus_per_task: 16
+  slurm_mem: 32G
+
+rtop_surface:
+  force: false
+  skip_existing: true
+  resume: true
+  slurm_time: 20
+  slurm_cpus_per_task: 1
+  slurm_mem: 8G
+
+atlas_labels:
+  # Where the Deen et al. (2011) archive is cached after download.
+  cache_dir: null
+  # Replace the HCP-MMP-derived ACC segmentation with a pair of fs_LR 32k
+  # label.gii files, e.g. the study's own functionally-defined ACC ROIs:
+  #   acc_labels: {L: /path/L.label.gii, R: /path/R.label.gii}
+  acc_labels: null
+  # Replace the Deen 2011 insula segmentation with supplied fs_LR 32k files --
+  # the study's own parcellation, if you have it, rather than this pipeline's
+  # reconstruction of it from the published MNI masks. Label values are named
+  # explicitly because a file made elsewhere need not use this order:
+  #   insula_labels:
+  #     L: {file: /path/left.func.gii,  vAI: 3, dAI: 2, PI: 1}
+  #     R: {file: /path/right.func.gii, vAI: 6, dAI: 5, PI: 4}
+  # See README, "The study's own insula parcellation".
+  insula_labels: null
+  force: false
+
+analysis:
+  # Which RTOP the 1.5-IQR outlier rule acts on. The paper does not say; see
+  # README, "Assumptions". `cortex` catches globally mis-scaled subjects.
+  outlier_statistic: cortex
+  # Subsamples per sample size in the stability analysis (Figures 2C, 7C).
+  n_resamples: 1000
+  # Covariates regressed out of both CCA blocks. The paper describes none.
+  covariates: []
+  # Set to Family_ID for leave-one-family-out cross-validation, to measure how
+  # much the published leave-one-out result owes to HCP's twin structure.
+  group_column: null
+  # Recompute group_rtop.tsv from the per-subject surfaces. Set false to re-run
+  # only the statistics.
+  rebuild_table: true
+  # Neighbour-averaging iterations applied to the surface RTOP before the
+  # gradient is taken. 0 is the Methods as written, and no setting reconciles
+  # the within-subject spread in Supplementary Table 1 -- see README, "Was the
+  # surface RTOP smoothed?". Exposed so that can be re-checked, not tuned.
+  gradient_smoothing: 0
+  # Plane the 3-D gradient directions are reported as angles in. `anatomical`
+  # is the sagittal plane -- the A/P and D/V axes the article's own polar plots
+  # are labelled with -- and reproduces its published mean directions. `patch`
+  # uses the plane of each subject's insular patch, which is tilted about 20
+  # degrees from the anatomical axes and rotates every angle by that much. The
+  # 3-D directions, and so every Rayleigh statistic, are the same either way.
+  # See README, "Mean directions".
+  gradient_frame: anatomical
+
+figures:
+  # Which figures to draw; null means all of them. One Hydra experiment per
+  # figure sets this, so `+experiment=figure3` redraws just that one:
+  #   uv run python -m insula_rtop.pipeline site=mysite +experiment=figure3
+  only: null
+  formats: [png, pdf]
+  dpi: 200
+
+slurm:
+  # Dispatch the per-subject steps as SLURM jobs. Auto-enabled when the
+  # pipeline itself is already running inside an allocation.
+  use: false
+  # Run per-subject steps in parallel locally instead (ignored when use=true).
+  n_jobs: 1
+  partition: ${site.slurm_partition}
+  account: ${site.slurm_account}
+  # Sliding-window cap on in-flight jobs. submitit's array_parallelism does not
+  # throttle independent submit() calls, and an unthrottled fan-out of hundreds
+  # of jobs starves a shared cluster.
+  max_jobs: 40
+
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d_%H-%M-%S}
+  job:
+    chdir: false
